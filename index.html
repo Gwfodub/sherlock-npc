@@ -292,6 +292,13 @@
 
 <script>
 
+const API_URL =
+    "https://sherlock-npc-ai.liyuanhui1118.workers.dev/";
+
+
+let conversationHistory = [];
+
+
 function handleKey(event) {
     if (event.key === "Enter") {
         sendMessage();
@@ -299,7 +306,7 @@ function handleKey(event) {
 }
 
 
-function sendMessage() {
+async function sendMessage() {
 
     const input = document.getElementById("userInput");
     const text = input.value.trim();
@@ -308,37 +315,161 @@ function sendMessage() {
         return;
     }
 
+    // 显示玩家消息
     addMessage("YOU", text, "user");
 
     input.value = "";
 
-    setTimeout(function() {
-        const response = generateHolmesResponse(text);
-        addMessage("SHERLOCK HOLMES", response, "holmes");
-    }, 600);
+    // 暂时显示等待状态
+    const loadingMessage =
+        addMessage(
+            "SHERLOCK HOLMES",
+            "正在思考……",
+            "holmes"
+        );
+
+
+    // 保存玩家消息
+    conversationHistory.push({
+        role: "user",
+        content: text
+    });
+
+
+    try {
+
+        const response = await fetch(API_URL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                messages: conversationHistory
+            })
+
+        });
+
+
+        const data = await response.json();
+
+
+        // 删除“正在思考”
+        loadingMessage.remove();
+
+
+        if (data.error) {
+
+            addMessage(
+                "SYSTEM",
+                "发生错误：" + data.error,
+                "holmes"
+            );
+
+            return;
+        }
+
+
+        const holmesReply =
+            data.response ||
+            "我暂时无法回答这个问题。";
+
+
+        // 显示 Holmes 回复
+        addMessage(
+            "SHERLOCK HOLMES",
+            holmesReply,
+            "holmes"
+        );
+
+
+        // 保存 Holmes 回复
+        conversationHistory.push({
+            role: "assistant",
+            content: holmesReply
+        });
+
+
+        // 简单更新当前话题显示
+        updateTopic(text);
+
+    }
+
+    catch (error) {
+
+        loadingMessage.remove();
+
+        addMessage(
+            "SYSTEM",
+            "无法连接到 Holmes。",
+            "holmes"
+        );
+
+        console.error(error);
+    }
+
 }
 
 
 function addMessage(name, text, type) {
 
-    const messages = document.getElementById("messages");
+    const messages =
+        document.getElementById("messages");
 
-    const message = document.createElement("div");
-    message.className = "message " + type;
+
+    const message =
+        document.createElement("div");
+
+    message.className =
+        "message " + type;
+
 
     message.innerHTML =
-        '<div class="name">' + name + '</div>' +
-        '<div class="bubble">' + text + '</div>';
+        '<div class="name">' +
+        name +
+        '</div>' +
+
+        '<div class="bubble">' +
+        escapeHtml(text) +
+        '</div>';
+
 
     messages.appendChild(message);
 
-    messages.scrollTop = messages.scrollHeight;
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+
+    return message;
 }
 
 
-function generateHolmesResponse(text) {
+function escapeHtml(text) {
 
-    const lower = text.toLowerCase();
+    const div =
+        document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+
+function updateTopic(text) {
+
+    const lower =
+        text.toLowerCase();
+
+
+    const topic =
+        document.getElementById("currentTopic");
+
+    const initiative =
+        document.getElementById("initiative");
+
 
     if (
         lower.includes("案件") ||
@@ -346,13 +477,13 @@ function generateHolmesResponse(text) {
         lower.includes("调查")
     ) {
 
-        document.getElementById("currentTopic").innerText =
+        topic.innerText =
             "Case Investigation";
 
-        document.getElementById("initiative").innerText =
+        initiative.innerText =
             "I2 — Topic Entry";
 
-        return "案件本身并不值得注意。真正值得注意的是案件留下的细节。告诉我，你更想了解证据、案发现场，还是嫌疑人的动机？";
+        return;
     }
 
 
@@ -361,13 +492,13 @@ function generateHolmesResponse(text) {
         lower.includes("现场")
     ) {
 
-        document.getElementById("currentTopic").innerText =
+        topic.innerText =
             "Evidence";
 
-        document.getElementById("initiative").innerText =
+        initiative.innerText =
             "I3 — Active Question";
 
-        return "很好。证据往往比证人的陈述更加可靠。你注意到现场有什么异常吗？有时候，一小块泥土便足以告诉我们一个人的行动路线。";
+        return;
     }
 
 
@@ -376,13 +507,13 @@ function generateHolmesResponse(text) {
         lower.includes("watson")
     ) {
 
-        document.getElementById("currentTopic").innerText =
+        topic.innerText =
             "Watson";
 
-        document.getElementById("initiative").innerText =
+        initiative.innerText =
             "I2 — Topic Entry";
 
-        return "华生是我的朋友，也是值得信赖的合作伙伴。他有时过于关注故事，而我更关注事实。不过，这种差异恰好使我们的调查更加有效。";
+        return;
     }
 
 
@@ -392,13 +523,13 @@ function generateHolmesResponse(text) {
         lower.includes("喜欢")
     ) {
 
-        document.getElementById("currentTopic").innerText =
+        topic.innerText =
             "Sensitive Topic";
 
-        document.getElementById("initiative").innerText =
+        initiative.innerText =
             "I0 — Response Only";
 
-        return "我想，你的问题与眼前的案件并没有太大关系。感情是一件复杂的事情，而我向来更愿意把时间花在可以通过事实解决的问题上。";
+        return;
     }
 
 
@@ -407,23 +538,21 @@ function generateHolmesResponse(text) {
         lower.includes("教授")
     ) {
 
-        document.getElementById("currentTopic").innerText =
+        topic.innerText =
             "Moriarty";
 
-        document.getElementById("initiative").innerText =
+        initiative.innerText =
             "I2 — Topic Entry";
 
-        return "莫里亚蒂是一个值得警惕的对手。他真正危险的地方，并不在于他的野心，而在于他的智力。";
+        return;
     }
 
 
-    document.getElementById("currentTopic").innerText =
+    topic.innerText =
         "General Conversation";
 
-    document.getElementById("initiative").innerText =
+    initiative.innerText =
         "I1 — Relevant Information";
-
-    return "一个有趣的问题。不过，在下结论之前，我们最好先确定事实。你能告诉我更多具体信息吗？";
 }
 
 </script>
