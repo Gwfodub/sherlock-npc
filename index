@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sherlock Holmes — NPC Prototype</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background: #171717;
+            color: #e8e3d8;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        .header {
+            border-bottom: 1px solid #555;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            letter-spacing: 3px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #999;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 25px;
+        }
+
+        .profile {
+            border: 1px solid #444;
+            padding: 22px;
+            background: #202020;
+        }
+
+        .profile h2 {
+            font-size: 18px;
+            margin-top: 0;
+            letter-spacing: 2px;
+        }
+
+        .profile-section {
+            margin-top: 20px;
+        }
+
+        .profile-title {
+            color: #999;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .profile-text {
+            margin-top: 5px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .chat {
+            border: 1px solid #444;
+            background: #202020;
+            display: flex;
+            flex-direction: column;
+            min-height: 650px;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #444;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 22px;
+            max-width: 80%;
+            line-height: 1.7;
+        }
+
+        .holmes {
+            margin-right: auto;
+        }
+
+        .user {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .name {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .bubble {
+            display: inline-block;
+            padding: 12px 16px;
+            border: 1px solid #444;
+            background: #292929;
+            text-align: left;
+        }
+
+        .user .bubble {
+            background: #333;
+        }
+
+        .input-area {
+            display: flex;
+            border-top: 1px solid #444;
+            padding: 15px;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            background: #171717;
+            border: 1px solid #555;
+            color: #eee;
+            padding: 13px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        button {
+            background: #ddd;
+            color: #111;
+            border: none;
+            padding: 0 22px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #fff;
+        }
+
+        .status {
+            margin-top: 15px;
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #777;
+        }
+
+        @media (max-width: 700px) {
+            .main {
+                grid-template-columns: 1fr;
+            }
+
+            .profile {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>SHERLOCK HOLMES</h1>
+        <p>PERSONA-CONSTRAINED NPC PROTOTYPE</p>
+    </div>
+
+    <div class="main">
+
+        <!-- Persona Profile -->
+        <div class="profile">
+
+            <h2>PERSONA PROFILE</h2>
+
+            <div class="profile-section">
+                <div class="profile-title">Identity</div>
+                <div class="profile-text">
+                    Consulting Detective<br>
+                    London
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="profile-title">Personality</div>
+                <div class="profile-text">
+                    Rational · Sharp · Independent · Curious · Reserved
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="profile-title">Values</div>
+                <div class="profile-text">
+                    Facts before assumptions.<br>
+                    Evidence before intuition.
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="profile-title">Knowledge</div>
+                <div class="profile-text">
+                    Criminal investigation<br>
+                    Chemistry · Medicine<br>
+                    London geography
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="profile-title">Current Topic</div>
+                <div class="profile-text" id="currentTopic">
+                    Case Investigation
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="profile-title">Initiative Level</div>
+                <div class="profile-text" id="initiative">
+                    I2 — Topic Entry
+                </div>
+            </div>
+
+            <div class="status">
+                PERSONA STATUS: STABLE
+            </div>
+
+        </div>
+
+        <!-- Chat -->
+        <div class="chat">
+
+            <div class="chat-header">
+                221B BAKER STREET · PRIVATE CONSULTATION
+            </div>
+
+            <div class="messages" id="messages">
+
+                <div class="message holmes">
+                    <div class="name">SHERLOCK HOLMES</div>
+                    <div class="bubble">
+                        Good evening. You appear to have come here with a question.
+                        I suggest you begin with the facts.
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="input-area">
+                <input
+                    type="text"
+                    id="userInput"
+                    placeholder="Ask Holmes about the case..."
+                    onkeydown="handleKey(event)"
+                >
+
+                <button onclick="sendMessage()">SEND</button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function handleKey(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+}
+
+
+function sendMessage() {
+
+    const input = document.getElementById("userInput");
+    const text = input.value.trim();
+
+    if (text === "") {
+        return;
+    }
+
+    addMessage("YOU", text, "user");
+
+    input.value = "";
+
+    setTimeout(function() {
+        const response = generateHolmesResponse(text);
+        addMessage("SHERLOCK HOLMES", response, "holmes");
+    }, 600);
+}
+
+
+function addMessage(name, text, type) {
+
+    const messages = document.getElementById("messages");
+
+    const message = document.createElement("div");
+    message.className = "message " + type;
+
+    message.innerHTML =
+        '<div class="name">' + name + '</div>' +
+        '<div class="bubble">' + text + '</div>';
+
+    messages.appendChild(message);
+
+    messages.scrollTop = messages.scrollHeight;
+}
+
+
+function generateHolmesResponse(text) {
+
+    const lower = text.toLowerCase();
+
+    if (
+        lower.includes("案件") ||
+        lower.includes("案子") ||
+        lower.includes("调查")
+    ) {
+
+        document.getElementById("currentTopic").innerText =
+            "Case Investigation";
+
+        document.getElementById("initiative").innerText =
+            "I2 — Topic Entry";
+
+        return "案件本身并不值得注意。真正值得注意的是案件留下的细节。告诉我，你更想了解证据、案发现场，还是嫌疑人的动机？";
+    }
+
+
+    if (
+        lower.includes("证据") ||
+        lower.includes("现场")
+    ) {
+
+        document.getElementById("currentTopic").innerText =
+            "Evidence";
+
+        document.getElementById("initiative").innerText =
+            "I3 — Active Question";
+
+        return "很好。证据往往比证人的陈述更加可靠。你注意到现场有什么异常吗？有时候，一小块泥土便足以告诉我们一个人的行动路线。";
+    }
+
+
+    if (
+        lower.includes("华生") ||
+        lower.includes("watson")
+    ) {
+
+        document.getElementById("currentTopic").innerText =
+            "Watson";
+
+        document.getElementById("initiative").innerText =
+            "I2 — Topic Entry";
+
+        return "华生是我的朋友，也是值得信赖的合作伙伴。他有时过于关注故事，而我更关注事实。不过，这种差异恰好使我们的调查更加有效。";
+    }
+
+
+    if (
+        lower.includes("感情") ||
+        lower.includes("爱情") ||
+        lower.includes("喜欢")
+    ) {
+
+        document.getElementById("currentTopic").innerText =
+            "Sensitive Topic";
+
+        document.getElementById("initiative").innerText =
+            "I0 — Response Only";
+
+        return "我想，你的问题与眼前的案件并没有太大关系。感情是一件复杂的事情，而我向来更愿意把时间花在可以通过事实解决的问题上。";
+    }
+
+
+    if (
+        lower.includes("莫里亚蒂") ||
+        lower.includes("教授")
+    ) {
+
+        document.getElementById("currentTopic").innerText =
+            "Moriarty";
+
+        document.getElementById("initiative").innerText =
+            "I2 — Topic Entry";
+
+        return "莫里亚蒂是一个值得警惕的对手。他真正危险的地方，并不在于他的野心，而在于他的智力。";
+    }
+
+
+    document.getElementById("currentTopic").innerText =
+        "General Conversation";
+
+    document.getElementById("initiative").innerText =
+        "I1 — Relevant Information";
+
+    return "一个有趣的问题。不过，在下结论之前，我们最好先确定事实。你能告诉我更多具体信息吗？";
+}
+
+</script>
+
+</body>
+</html>
